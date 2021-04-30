@@ -718,3 +718,49 @@ def parse_props(X_train,y_train,mat_size=100):
     #Think I can just delete all of the other shit and return max_diffs
     # Then I can just pull out those locations.
     return(max_diffs)
+
+def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
+    # How many sequences do we have?
+    numClone = len(pre_pep1)
+    final_pep1=[] # initialize a variable
+    # Allow for the possibility that you are doing a binary comparison
+    for re_pep in [pre_pep1, pre_pep2]:
+        numClone = len(re_pep[0])
+        ### FOR NOW, HARD CODE A PEPTIDE SEQUENCE LEN MAX OF 18
+        ### MIGHT NEED TO GET CREATIVE WITH THIS, MIGHT NEED TO
+        ### ADAPT IT AS WE GO, JUST IN CASE.
+        sequence_dim = 18
+        pep_PCA=np.zeros([numClone,sequence_dim])
+
+        for i in range(numClone): # For all of our polyreactive sequences...
+            # this 'count' variable is how we center align... probably 
+            # NOT what we want to do for the peptide analysis... except maybe
+            # for the 'betwixt anchors' section
+            count = int((sequence_dim - len(re_pep[0][i]))/2.0)
+
+            # Check the work of Guillame et al. [PNAS 2018]
+            # for some ideas on how to encode this matrix
+
+            # This loop is where we put these rules for encoding
+            # For now, let's make simple assumptions
+            # (pos 2 and last pos are anchors)
+            # BUT code up a "bulge" region that is centrally aligned
+            for m in re_pep[0][i]:
+                for j in range(len(key)):
+                    if m==AA_key[j]:
+                        pep_PCA[i][count]=key[j]
+                        count=count+1
+        if binary:
+            # Unfortunate naming here for the binary case
+            # but it is what it is...
+            if final_pep1 == []:
+                final_pep1 = pep_PCA
+            else:
+                final_pep2 = pep_PCA
+        else:
+            break
+    
+    if binary:
+        return(final_pep1,final_pep2)
+    else:
+        return(pep_PCA)
