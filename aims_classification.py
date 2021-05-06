@@ -113,7 +113,7 @@ def get_bigass_matrix(ALL_mono, OneChain = False, giveSize=[],manuscript_arrange
     mono_pca_stack = np.hstack([mono_PCA,BIG_mono_final])
     return(mono_pca_stack)
 
-def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False, 
+def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False, special= 'peptide',
                   xVal = 'kfold',ridCorr = False, feat_sel = 'none', classif = 'mda'):
         
     mono_dim=np.shape(ALL_mono)[1]
@@ -126,7 +126,7 @@ def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False,
     seqs_all = np.hstack((ALL_mono,ALL_poly))
     
     # Stupid to recreate this matrix every single time... Should do it BEFORE, then splitting
-    bigass_matrix = get_bigass_matrix(seqs_all, OneChain = OneChain)
+    bigass_matrix = get_bigass_matrix(seqs_all, OneChain = OneChain, special = special)
         
     # Alright so here is where the data is actually split into the test/train/etc.
     if xVal == 'loo':
@@ -178,7 +178,7 @@ def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False,
         elif feat_sel == 'max_diff':
             # Go back to my way of picking out the best features?
             # Need to split the poly and mono into separate matrices for this one...
-            max_diffs = aims.parse_props(X_train,y_train,mat_size=matsize)
+            max_diffs = aims.parse_props(np.transpose(X_train),y_train,mat_size=matsize)
             indices = [int(a) for a in max_diffs[:,1]]
             train_mat = X_train[:,indices]
         

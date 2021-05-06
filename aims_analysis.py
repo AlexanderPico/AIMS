@@ -764,3 +764,70 @@ def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
         return(final_pep1,final_pep2)
     else:
         return(pep_PCA)
+###################################################
+# Peptide stuff:
+def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
+    # How many sequences do we have?
+    numClone = len(pre_pep1)
+    final_pep1=[] # initialize a variable
+    # Allow for the possibility that you are doing a binary comparison
+    for re_pep in [pre_pep1, pre_pep2]:
+        numClone = len(re_pep[0])
+        ### FOR NOW, HARD CODE A PEPTIDE SEQUENCE LEN MAX OF 18
+        ### MIGHT NEED TO GET CREATIVE WITH THIS, MIGHT NEED TO
+        ### ADAPT IT AS WE GO, JUST IN CASE.
+        sequence_dim = 14
+        pep_PCA=np.zeros([numClone,sequence_dim])
+
+        for i in range(numClone): # For all of our polyreactive sequences...
+
+            # Check the work of Guillame et al. [PNAS 2018]
+            # for some ideas on how to encode this matrix
+
+            # This loop is where we put these rules for encoding
+            # For now, let's make simple assumptions
+            # (pos 2 and last pos are anchors)
+            # BUT code up a "bulge" region that is centrally aligned
+            tot_len = len(re_pep[0][i])
+
+            # NOTE BULGE SHOULD ALWAYS BE > 0!!! 
+            # IF PEPTIDES OF LENGTH 8 EXIST, CHANGE TO -7
+            bulge = tot_len - 8
+            bulge_cen = int((sequence_dim - bulge)/2.0)
+
+            count = 0
+            b_count = 0
+            start_end = True
+            for m in re_pep[0][i]:
+                if count > 3 and count < sequence_dim-4:
+                    if b_count == 0:
+                        count = bulge_cen
+                        b_count = b_count + 1
+                    else:
+                        b_count = b_count + 1
+                # This should then jump us over to the
+                # end once we get past the bulk
+                # ie, gaps should go around the bulk
+                if b_count > bulge:
+                    if start_end:
+                        count = sequence_dim-4
+                        start_end = False
+
+                for j in range(len(key)):
+                    if m==AA_key[j]:
+                        pep_PCA[i][count]=key[j]
+                        count=count+1
+        if binary:
+            # Unfortunate naming here for the binary case
+            # but it is what it is...
+            if final_pep1 == []:
+                final_pep1 = pep_PCA
+            else:
+                final_pep2 = pep_PCA
+        else:
+            break
+    
+    if binary:
+        return(final_pep1,final_pep2)
+    else:
+        return(pep_PCA)
