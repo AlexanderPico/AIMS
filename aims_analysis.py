@@ -52,7 +52,8 @@ def get_sequence_dimension(re_poly):
 # I used to re-arrange the CDR loops for a more position-accurate
 # representation. In the current analysis, this isn't necessary.
 def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,
-pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
+pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False,
+alignment = 'center'):
     # Do this so that 
     if giveSize == []:
         if binary:
@@ -95,9 +96,19 @@ pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
                 leng=len(re_poly[k][i]) #should be this if re-sampling
                 # the int clause below is how we center align
                 if type(max_len) == int:
-                    count = int((max_len-leng)/2.0)
+                    if alignment.lower() == 'center':
+                        count = int((max_len-leng)/2.0)
+                    elif alignment.lower() == 'left':
+                        count = 0
+                    elif alignment.lower() == 'right':
+                        count = int(max_len - leng)
                 else:
-                    count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                    if alignment.lower() == 'center':
+                        count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                    elif alignment.lower() == 'left':
+                        count = int(0) + int(sum(max_len[:k]))
+                    elif alignment.lower() == 'right':
+                        count = int(max_len - leng) + int(sum(max_len[:k]))
                 for m in re_poly[k][i]: # SO IS THIS ONE for bootstrapping
                     for j in range(len(key)):
                         if m==AA_key[j]:
